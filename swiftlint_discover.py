@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 
 import subprocess
-from subprocess import PIPE, STDOUT
+from subprocess import PIPE, DEVNULL
+
+
+class ParserError(Exception):
+    def __init__(self, message, input_line):
+        message = f"{message}\nOffending line was:\n  {input_line}"
+        super().__init__(message)
 
 
 class Rule:
@@ -46,8 +52,9 @@ def print_section(rules_type, rules):
 
 
 def main():
+    # FIXXME
     process = subprocess.run(
-        ["swiftlint", "rules"], stdout=PIPE, stderr=STDOUT, universal_newlines=True
+        ["swiftlint", "rules"], stdout=PIPE, stderr=DEVNULL, universal_newlines=True
     )
 
     rules = []
@@ -55,6 +62,12 @@ def main():
     stdout_lines = process.stdout.splitlines()
     for line in stdout_lines[4:-1]:
         columns = [c.strip() for c in line.split("|") if c]
+
+        if len(columns) != 7:
+            raise ParserError(
+                "Expected `swiftlint rules` output to be formatted on 7 columns.", line
+            )
+
         rule = Rule(*columns)
         rules.append(rule)
 
