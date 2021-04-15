@@ -78,7 +78,7 @@ def main():
             continue
         if rule.analyzer:
             disabled_analyzer_rules.append(rule)
-        if rule.opt_in:
+        elif rule.opt_in:
             disabled_opt_in_rules.append(rule)
 
     if disabled_opt_in_rules or disabled_analyzer_rules:
