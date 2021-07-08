@@ -12,7 +12,7 @@ You need Python 3 installed on your system. The easiest way is probably to insta
 brew install python3
 ```
 
-but if you want to keep things clean an organised (and if you're using multiple python versions in parallel, I'd recommend looking at [pyenv](https://github.com/pyenv/pyenv)).
+but if you want to keep things clean and organised (and if you're using multiple python versions in parallel) I'd recommend looking at [pyenv](https://github.com/pyenv/pyenv).
 
 ## Usage
 
