@@ -3,7 +3,7 @@
 import argparse
 import os
 import subprocess
-from subprocess import PIPE, DEVNULL
+from subprocess import DEVNULL, PIPE
 
 
 class ParserError(Exception):
@@ -161,6 +161,8 @@ def load_swiftlint_conf(project_dir):
 
 def collect_explicitly_disabled_rules(project_dir):
     conf = load_swiftlint_conf(project_dir)
+    if conf is None:
+        return set()
 
     try:
         disabled_rules = conf["disabled_rules"]
