@@ -78,7 +78,7 @@ def bool_from_string(bool_str):
     raise ValueError(f"Unexpected boolean string '{bool_str}'")
 
 
-def print_summary(new_rules):
+def print_summary(new_rules, quiet=False):
     disabled_opt_in_rules = []
     disabled_analyzer_rules = []
     for rule in new_rules:
@@ -90,22 +90,28 @@ def print_summary(new_rules):
             disabled_opt_in_rules.append(rule)
 
     if disabled_opt_in_rules or disabled_analyzer_rules:
-        print_section("opt-in", disabled_opt_in_rules)
-        print_section("analyzer", disabled_analyzer_rules)
+        print_section("opt-in", disabled_opt_in_rules, quiet=quiet)
+        if not quiet:
+            print_section("analyzer", disabled_analyzer_rules)
     else:
         print("No new rules to enable!")
 
 
-def print_section(rules_type, rules):
+def print_section(rules_type, rules, quiet=False):
     if not rules:
         return
 
-    print()
-    print(f"{rules_type.capitalize()} rules you could enable:")
+    if not quiet:
+        print()
+        print(f"{rules_type.capitalize()} rules you could enable:")
 
     rules.sort(key=lambda x: x.identifier)
+
     for rule in rules:
-        rule.pretty_print()
+        if quiet:
+            print(rule.identifier)
+        else:
+            rule.pretty_print()
 
 
 def collect_disabled_rules(project_dir):
@@ -188,6 +194,12 @@ def parse_args():
         default=os.getcwd(),
         nargs="?",
     )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="only print a list of the opt-in rules that can be activated (this doesn't print analyzer rules!)",
+    )
 
     args = parser.parse_args()
     args.dir = os.path.abspath(args.dir)
@@ -203,7 +215,7 @@ def main():
     explicitly_disabled_rules = collect_explicitly_disabled_rules(args.dir)
     new_rules = disabled_rules - explicitly_disabled_rules
 
-    print_summary(new_rules)
+    print_summary(new_rules, quiet=args.quiet)
 
 
 if __name__ == "__main__":
