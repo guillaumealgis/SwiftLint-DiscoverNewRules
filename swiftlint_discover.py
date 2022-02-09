@@ -102,6 +102,8 @@ def print_section(rules_type, rules):
 
     print()
     print(f"{rules_type.capitalize()} rules you could enable:")
+
+    rules.sort(key=lambda x: x.identifier)
     for rule in rules:
         rule.pretty_print()
 
