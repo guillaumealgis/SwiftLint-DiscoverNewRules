@@ -26,6 +26,7 @@ class Rule:
         enabled=False,
         kind="",
         analyzer=False,
+        uses_sourcekit=False,
         configuration="",
     ):
         self.identifier = identifier.strip()
@@ -34,6 +35,7 @@ class Rule:
         self.enabled = bool_from_string(enabled)
         self.kind = kind.strip()
         self.analyzer = bool_from_string(analyzer)
+        self.uses_sourcekit = bool_from_string(uses_sourcekit)
         self.configuration = configuration.strip()
 
     def pretty_print(self, ident=2):
@@ -124,13 +126,26 @@ def collect_disabled_rules(project_dir):
         cwd=project_dir,
     )
 
+    found_header_start_line = False
+    found_header_end_line = False
+
     rules = []
 
     stdout_lines = process.stdout.splitlines()
-    for line in stdout_lines[4:-1]:
+    for line in stdout_lines:
+        if line.startswith("+-"):
+            if found_header_start_line:
+                found_header_end_line = True
+            else:
+                found_header_start_line = True
+            continue
+
+        if found_header_start_line and not found_header_end_line:
+            continue
+
         columns = [c.strip() for c in line.split("|") if c]
 
-        if len(columns) != 7:
+        if len(columns) != 8:
             raise ParserError(
                 "Expected `swiftlint rules` output to be formatted on 7 columns.", line
             )
