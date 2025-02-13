@@ -4,10 +4,11 @@ import argparse
 import os
 import subprocess
 from subprocess import DEVNULL, PIPE
+from typing import Any
 
 
 class ParserError(Exception):
-    def __init__(self, message, input_line):
+    def __init__(self, message: str, input_line: str):
         message = f"{message}\nOffending line was:\n  {input_line}"
         super().__init__(message)
 
@@ -20,14 +21,14 @@ class Rule:
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        identifier,
-        opt_in=False,
-        correctable=False,
-        enabled=False,
-        kind="",
-        analyzer=False,
-        uses_sourcekit=False,
-        configuration="",
+        identifier: str,
+        opt_in: bool | str = False,
+        correctable: bool | str = False,
+        enabled: bool | str = False,
+        kind: str = "",
+        analyzer: bool | str = False,
+        uses_sourcekit: bool | str = False,
+        configuration: str = "",
     ):
         self.identifier = identifier.strip()
         self.opt_in = bool_from_string(opt_in)
@@ -67,7 +68,7 @@ class Rule:
         return str_repr
 
 
-def bool_from_string(bool_str):
+def bool_from_string(bool_str: str | bool) -> bool:
     if isinstance(bool_str, bool):
         return bool_str
 
@@ -156,7 +157,7 @@ def collect_disabled_rules(project_dir):
     return {rule for rule in rules if not rule.enabled}
 
 
-def load_swiftlint_conf(project_dir):
+def load_swiftlint_conf(project_dir: str) -> Any | None:
     # pylint: disable=import-outside-toplevel
 
     try:
@@ -168,6 +169,7 @@ def load_swiftlint_conf(project_dir):
         return None
 
     # Try to use the LibYAML C bindings if available.
+    Loader: type[yaml.CLoader] | type[yaml.Loader]
     try:
         from yaml import CLoader as Loader
     except ImportError:
@@ -182,7 +184,7 @@ def load_swiftlint_conf(project_dir):
         return None
 
 
-def collect_explicitly_disabled_rules(project_dir):
+def collect_explicitly_disabled_rules(project_dir: str) -> set[Rule]:
     conf = load_swiftlint_conf(project_dir)
     if conf is None:
         return set()
@@ -195,8 +197,8 @@ def collect_explicitly_disabled_rules(project_dir):
     return {Rule(identifier) for identifier in disabled_rules}
 
 
-def parse_args():
-    def dir_path(string):
+def parse_args() -> argparse.Namespace:
+    def dir_path(string: str) -> str:
         if not os.path.isdir(string):
             raise InvalidDirectoryError(string)
         return string
@@ -222,8 +224,7 @@ def parse_args():
     return args
 
 
-def main():
-
+def main() -> None:
     args = parse_args()
 
     disabled_rules = collect_disabled_rules(args.dir)
